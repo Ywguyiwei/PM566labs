@@ -136,8 +136,9 @@ Wind: X-axis (horizontal): Dates ranging from early August to early September (A
 
 Question 8: 
 ```{r}
-
+boxplot(met$temp, col = "blue")
 
 ```
-
+Questions about the data:
+Are the outliers real, or could they be data entry errors? Ans: There are several points above and below the whiskers, indicating outliers. The outliers could be true extreme values because if they are collected from natural measurement
 
