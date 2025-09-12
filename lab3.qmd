@@ -1,5 +1,16 @@
+---
+title: "lab3yg"
+format:
+ html:
+   embed-resources: true
+---
 Question1: 
+```{r}
 met <- read.csv("~/Downloads/met_all.gz")
+```
+
+
+
 
 Question 2: 
 ```{r}
