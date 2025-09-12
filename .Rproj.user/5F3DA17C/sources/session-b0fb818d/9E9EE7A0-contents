@@ -1,0 +1,7 @@
+met <- read.csv("~/Downloads/met_all.gz")
+dim(met)
+head(met)
+tail(met)
+str(met)
+
+

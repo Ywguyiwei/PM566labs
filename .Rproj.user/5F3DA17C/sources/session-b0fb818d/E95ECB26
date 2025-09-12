@@ -1,0 +1,33 @@
+{
+    "id": "E95ECB26",
+    "path": "~/Desktop/PM566labs/lab3.qmd",
+    "project_path": "lab3.qmd",
+    "type": "quarto_markdown",
+    "hash": "299088659",
+    "contents": "",
+    "dirty": false,
+    "created": 1757703203112.0,
+    "source_on_save": false,
+    "relative_order": 3,
+    "properties": {
+        "rmdVisualMode": "false",
+        "rmdVisualWrapConfigured": "true",
+        "tempName": "Untitled2",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "118,93",
+        "scrollLine": "118",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "",
+        "rmdVisualModeLocation": "2:185",
+        "docOutlineSize": "110"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1757706829,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1757706829611,
+    "read_only": false,
+    "read_only_alternatives": []
+}

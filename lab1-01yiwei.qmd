@@ -1,0 +1,108 @@
+---
+title: "Lab1-1"
+author: "Yiwei Gu"
+date: 08/29/25
+format:
+ html:
+  theme: sandstone
+fig-width: 10
+fig.height: 10
+---
+
+```{r}
+library(datasauRus)
+```
+
+Question 1
+
+```{r}
+table(datasaurus_dozen$dataset)
+```
+
+```{r}
+summary(datasaurus_dozen$dataset)
+```
+
+Question 2
+
+```{r}
+dino_data <- datasaurus_dozen[datasaurus_dozen$dataset == 'dino', ]
+```
+
+```{r}
+#| fig-height: 10
+#| fig-width: 10
+plot(dino_data$x, dino_data$y)
+# ggplot(data = dino_data, mapping = aes(x = x, y = y)) +
+#   geom_point()
+```
+
+```{r}
+cor(dino_data$x, dino_data$y)
+# dino_data |>
+#   summarize(r = cor(x, y))
+```
+
+It has 1846 rows and 3 columns. The variables are x and y.
+
+Question 3
+
+```{r}
+star_data <- datasaurus_dozen[datasaurus_dozen$dataset == 'star', ]
+```
+
+```{r}
+#| fig-height: 6
+#| fig-width: 7
+plot(star_data$x, star_data$y)
+# ggplot(data = star_data, mapping = aes(x = x, y = y)) +
+#   geom_point()
+```
+
+```{r}
+cor(star_data$x, star_data$y)
+# star_data |>
+#   summarize(r = cor(x, y))
+```
+
+TBoth correlations (≈ −0.06) indicate a very weak negative linear relationship.Their relationship is very close as their value is so close. Question 4
+
+```{r}
+circle_data <- datasaurus_dozen[datasaurus_dozen$dataset == 'circle', ]
+```
+
+```{r}
+plot(circle_data$x, circle_data$y)
+# ggplot(data = circle_data, mapping = aes(x = x, y = y)) +
+#   geom_point()
+```
+
+```{r}
+cor(circle_data$x, circle_data$y)
+# circle_data |>
+#   summarize(r = cor(x, y))
+```
+
+All of the two values are around −0.06 to −0.07, so they all represent a very weak negative correlation. Question 5
+
+```{r}
+#| fig-height: 10
+#| fig-width: 10
+par(mar = c(2,2,2,2))
+layout(matrix(1:16, nrow=4, ncol=4))
+for(name in unique(datasaurus_dozen$dataset)){
+  subset <- datasaurus_dozen[datasaurus_dozen$dataset == name, ]
+  plot(subset$x, subset$y, main = name)
+}
+layout(1)
+par(mar = c(5,4,4,2) + 0.1)
+```
+
+Question 6
+
+```{r}
+sapply(unique(datasaurus_dozen$dataset), function(name){
+    subset <- datasaurus_dozen[datasaurus_dozen$dataset == name, ]
+    return(cor(subset$x, subset$y))
+})
+```

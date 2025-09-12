@@ -1,0 +1,84 @@
+---
+title: "Lab1"
+author: "yiwei"
+format: 
+ html:
+  embed-resources: true
+fig-width: 8
+fig-height: 6
+editor: visual
+---
+
+Questions 1
+
+```{r}
+2+2
+```
+
+```{r}
+library(datasauRus)
+```
+
+```{r}
+table(datasaurus_dozen$dataset)
+```
+
+```{r}
+summary(datasaurus_dozen$dataset)
+```
+
+It has 1846 rows and 3 columns. The variables are x and y.
+
+Question 2
+
+```{r}
+dino_data <- datasaurus_dozen[datasaurus_dozen$dataset == 'dino', ]
+```
+
+```{r}
+plot(dino_data$x, dino_data$y)
+# ggplot(data = dino_data, mapping = aes(x = x, y = y)) +
+#   geom_point()
+```
+
+```{r}
+cor(dino_data$x, dino_data$y)
+# dino_data |>
+#   summarize(r = cor(x, y))
+```
+
+Question 2
+
+Question 6
+
+```{r}
+sapply(unique(datasaurus_dozen$dataset), function(name){
+    subset <- datasaurus_dozen[datasaurus_dozen$dataset == name, ]
+    return(cor(subset$x, subset$y))
+})
+```
+
+Question 5
+
+```{r}
+par(mar = c(2,2,2,2))
+layout(matrix(1:16, nrow=4, ncol=4))
+for(name in unique(datasaurus_dozen$dataset)){
+  subset <- datasaurus_dozen[datasaurus_dozen$dataset == name, ]
+  plot(subset$x, subset$y, main = name)
+}
+layout(1)
+par(mar = c(5,4,4,2) + 0.1)
+```
+
+Question 5
+
+```{r}
+par(mar = c(2,2,2,2))
+layout(matrix(1:16, nrow=4, ncol=4))
+for(name in unique(datasaurus_dozen$dataset)){
+  subset <- datasaurus_dozen[datasaurus_dozen$dataset == name, ]
+  plot(subset$x, subset$y, main = name)
+}
+layout(1)
+```

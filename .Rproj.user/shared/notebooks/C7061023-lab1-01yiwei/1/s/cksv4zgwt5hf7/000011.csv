@@ -1,0 +1,3 @@
+"0","#| fig-height: 6"
+"0","#| fig-width: 7"
+"0","plot(star_data$x, star_data$y)"

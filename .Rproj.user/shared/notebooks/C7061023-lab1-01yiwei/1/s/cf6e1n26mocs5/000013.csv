@@ -1,0 +1,3 @@
+"0","#| fig-height: 10"
+"0","#| fig-width: 10"
+"0","plot(dino_data$x, dino_data$y)"

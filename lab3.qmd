@@ -1,0 +1,132 @@
+Question1: 
+met <- read.csv("~/Downloads/met_all.gz")
+
+Question 2: 
+```{r}
+dim(met)
+head(met)
+tail(met)
+```
+
+there are 2377343 rows and 30 column. 
+
+Question 3:
+
+```{r}
+str(met)
+```
+
+Question4: 
+```{r}
+table(met$year)
+```
+
+
+```{r}
+table(met$day)
+```
+
+```{r}
+table(met$hour)
+```
+
+```{r}
+summary(met$temp)
+```
+
+```{r}
+summary(met$elev)
+```
+
+```{r}
+summary(met$wind.sp)
+```
+
+
+```{r}
+met$elev[met$elev==9999.0] <- NA
+
+summary(met$elev)
+```
+
+The highest weather station is 4113 meters. 
+
+```{r}
+met <- met[met$temp>-40,]
+met2 <- met[order(met$temp),]
+head(met2)
+```
+
+Question 5
+
+```{r}
+met$elev[which.min(met$temp)]
+range(met$elev,na.rm = TRUE)
+```
+
+```{r}
+met <- met[met$temp>-15,]
+met2 <- met[order(met$temp),]
+head(met2)
+```
+
+Question 6:
+```{r}
+elev <- met[met$elev==max(met$elev, na.rm=TRUE), ]
+summary(elev)
+```
+
+
+```{r}
+cor(elev$temp, elev$wind.sp, use="complete")
+cor(elev$temp, elev$hour, use="complete")
+cor(elev$wind.sp, elev$day, use="complete")
+cor(elev$wind.sp, elev$hour, use="complete")
+cor(elev$temp, elev$day, use="complete")
+```
+
+Question 7;
+
+```{r}
+hist(met$elev, breaks=100)
+hist(met$temp)
+hist(met$wind.sp)
+```
+library(leaflet)
+```{r}
+library(leaflet)
+leaflet(elev) %>%
+  addProviderTiles('OpenStreetMap') %>% 
+  addCircles(lat=~lat,lng=~lon, opacity=1, fillOpacity=1, radius=100)
+```
+
+```{r}
+library(lubridate)
+elev$date <- with(elev, ymd_h(paste(year, month, day, hour, sep= ' ')))
+summary(elev$date)
+elev <- elev[order(elev$date),]
+head(elev)
+```
+
+Question 8:
+```{r}
+plot(elev$date, elev$temp, type='l')
+plot(elev$date, elev$wind.sp, type='l')
+```
+
+
+Tem: -axis (horizontal): Dates ranging from early August to early September (Aug 01 – Sep 02). Y-axis (vertical): Temperature values (elev$temp), ranging from about 2 to 15. Temperatures oscillate daily (short-term cycles), likely reflecting day–night variation.Values generally fall between 5–12°C, with occasional lows around 2–4°C and highs peaking at 13–15°C.
+Early August (Aug 01–10): Strong fluctuations, but temperatures mostly in mid-range (6–12°C).
+Mid-August (Aug 11–20): Slight dips observed, some lows near 2–4°C.
+Late August (Aug 21–31): More pronounced variability, with frequent swings between 5–13°C.
+
+Wind: X-axis (horizontal): Dates ranging from early August to early September (Aug 01 – Sep 02).Y-axis (vertical): Wind speed values (elev$wind.sp), ranging approximately from 0 to a little over 20.  Wind speed fluctuates frequently with short-term variability. Early August (Aug 01–10): Wind speed is mostly lower, with values generally between 0–10. Mid-August (Aug 11–20): Increased variability, with some peaks approaching 15–20. Late August (Aug 21–30): More frequent high wind speeds, often above 10 and peaking above 20.
+
+
+Question 8: 
+```{r}
+
+
+```
+
+
