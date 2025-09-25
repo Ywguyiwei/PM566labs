@@ -1,0 +1,271 @@
+---
+title: "Yiwei Gu HW1 092625"
+format: 
+ html:
+   embed-resources: true
+---
+
+#1
+
+read data 2002 and 2022:
+
+```{r}
+data2002 <- read.csv("~/Desktop/2002.csv")
+data2022 <- read.csv("~/Desktop/2022.csv")
+```
+
+check dimemsions, headers and tail:
+
+```{r}
+dim(data2002)
+dim(data2022)
+
+head(data2002)
+tail(data2002)
+
+head(data2022)
+tail(data2022)
+```
+
+check variable names and types
+
+```{r}
+str(data2002)
+str(data2022)
+```
+
+-   closer look at the key variables
+
+```{r}
+table(data2002$Daily.Mean.PM2.5.Concentration)
+table(data2022$Daily.Mean.PM2.5.Concentration)
+summary(data2002$Daily.Mean.PM2.5.Concentration)
+summary(data2022$Daily.Mean.PM2.5.Concentration)
+```
+
+-   distribution of the key variable:
+
+```{r}
+hist(data2002$Daily.Mean.PM2.5.Concentration)
+hist(data2022$Daily.Mean.PM2.5.Concentration)
+```
+
+```{r}
+boxplot(data2002$Daily.Mean.PM2.5.Concentration)
+boxplot(data2022$Daily.Mean.PM2.5.Concentration)
+```
+
+Summary: dataset 2002 has 15976 rows and 22 columns, dataset2022 has 59703 rows and 23 columns. The key variables are: Date Local / Date → the sampling date (daily), the daily average PM2.5 concentration (µg/m³). State Name / County Name / City Name → geographic identifiers. Site Num (sometimes along with County Code, Site Code) → identifies the monitoring site. Latitude / Longitude → location of the monitoring site (useful for mapping). Sample Duration → indicates if measurement is 24-hr, 1-hr, etc. (for PM2.5, often 24-hr avg). POC (Parameter Occurrence Code) → distinguishes multiple instruments at the same site. Among this, the daily average PM2.5 concentration (µg/m³) is the main variable we're investigating in this assignment. The sumamry data shows dataset 2002 has mean value 16.12 ug/m3 and max. Maxvalue is 104.3ug/m3. Distribution: right-skewed, with many moderate values and some extreme outliers. However, dataset2022 has implausible values, the max value is 302.5 ug/m3 and mean is 8.414, and these -ve values would be removed in later section after combination of two datasets. Distribution: right-skewed, lower central tendency compared to 2002, but with occasional extreme peaks (likely wildfire smoke events). PM2.5 levels in 2022 are, on average, about half of 2002 levels, showing long-term improvement in California’s air quality. However, 2022 shows some very high outliers (>300 µg/m³), which probably correspond to episodic wildfire pollution events. overall, Data quality is good; no missing PM values. The key PM2.5 variable shows clear right-skewness in both years. Long-term air quality has improved substantially, though extreme pollution events remain visible in 2022.
+
+#2
+combine and rename: 
+```{r}
+library(dplyr)
+library(lubridate)
+
+data2002 <- data2002 %>%
+  mutate(Year = 2002)
+
+data2022 <- data2022 %>%
+  mutate(Year = 2022)
+
+data_all <- bind_rows(data2002, data2022)
+```
+
+```{r}
+library(dplyr)
+
+names(data_all)[names(data_all) == "Daily.Mean.PM2.5.Concentration"] <- "PM25"
+
+names(data_all)[names(data_all) == "Site.Latitude"] <- "Latitude"
+names(data_all)[names(data_all) == "Site.Longitude"] <- "Longitude"
+names(data_all)[names(data_all) == "Site.ID"] <- "Site"
+
+names(data_all)
+
+```
+
+
+
+```{r}
+data_all <- data_all %>%
+  mutate(
+    issue = case_when(
+      is.na(PM25) ~ "Missing",
+      PM25 < 0 ~ "Negative",
+      TRUE ~ "Valid"
+    )
+  )
+
+issue_summary <- data_all %>%
+  group_by(Year) %>%
+  summarise(
+    total = n(),
+    missing = sum(issue == "Missing"),
+    negative = sum(issue == "Negative"),
+    prop_missing = mean(issue == "Missing"),
+    prop_negative = mean(issue == "Negative")
+  )
+
+issue_summary
+```
+
+
+No missing values in either year. Negative values appear only in 2022, though the proportion is very small (~0.36%). This suggests a slight increase in measurement or data entry errors in the later year, but overall data quality is good. Maximum PM2.5 value (~300) is plausible and kept.
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+issue_plot_data <- data_all %>%
+  mutate(issue = case_when(
+    PM25 < 0 ~ "Negative",
+    TRUE ~ "Valid"
+  )) %>%
+  group_by(Year, issue) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  group_by(Year) %>%
+  mutate(prop = count / sum(count))
+
+
+ggplot(issue_plot_data, aes(x = factor(Year), y = prop, fill = issue)) +
+  geom_bar(stat = "identity", position = "stack") +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 0.1)) +
+  labs(
+    title = "Proportion of Valid and Negative PM2.5 Values by Year",
+    x = "Year",
+    y = "Proportion",
+    fill = "Data Issue"
+  ) +
+  theme_minimal(base_size = 14)
+
+```
+
+#3:
+
+```{r}
+library(leaflet)
+
+
+pal <- colorFactor(
+  palette = c("purple", "green"),
+  domain = c(2002, 2022)
+)
+
+leaflet(data_all) %>%
+  addTiles() %>%
+  addCircleMarkers(
+    ~Longitude, ~Latitude,
+    color = ~pal(Year),
+    radius = 5,
+    fillOpacity = 0.7,
+    popup = ~paste("Year:", Year)
+  ) %>%
+  addLegend(
+    "bottomright", 
+    pal = pal, 
+    values = ~Year,
+    title = "Year",
+    opacity = 1
+  )
+
+```
+
+
+2002 sites (purple): clustered around major urban areas and some regional monitoring stations. 2022 sites (green): many overlap with 2002 locations, but some new sites appear in additional regions, indicating expanded coverage. Observation: The overall spatial distribution is similar, but there are more monitoring sites in 2022, especially in previously under-monitored areas.
+
+
+
+
+#5: 
+
+level1: state level analysis 
+
+```{r}
+data_all_clean <- data_all %>%
+  filter(PM25 >= 0)
+
+state_summary <- data_all_clean %>%
+  group_by(Year) %>%
+  summarise(
+    mean_PM25 = mean(PM25, na.rm = TRUE),
+    median_PM25 = median(PM25, na.rm = TRUE),
+    sd_PM25 = sd(PM25, na.rm = TRUE),
+    min_PM25 = min(PM25, na.rm = TRUE),
+    max_PM25 = max(PM25, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print("State-level summary:")
+print(state_summary)
+
+
+ggplot(data_all_clean, aes(x = PM25, fill = factor(Year))) +
+  geom_histogram(alpha = 0.6, position = "identity", bins = 50) +
+  scale_fill_manual(values = c("2002" = "blue", "2022" = "red")) +
+  labs(title = "Distribution of PM2.5 in California by Year",
+       x = "PM2.5 (µg/m³)", fill = "Year") +
+  theme_minimal()
+
+ggplot(data_all_clean, aes(x = factor(Year), y = PM25, fill = factor(Year))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("2002" = "blue", "2022" = "red")) +
+  labs(title = "PM2.5 Distribution in California by Year",
+       x = "Year", y = "PM2.5 (µg/m³)") +
+  theme_minimal()
+```
+level2:
+```{r}
+data_all_clean <- data_all %>%
+  filter(PM25 >= 0)
+county_summary <- data_all_clean %>%
+  group_by(County, Year) %>%
+  summarise(
+    mean_PM25 = mean(PM25, na.rm = TRUE),
+    median_PM25 = median(PM25, na.rm = TRUE),
+    sd_PM25 = sd(PM25, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print("County-level summary:")
+print(county_summary)
+ggplot(data_all_clean, aes(x = reorder(County, PM25, FUN = median), y = PM25, fill = factor(Year))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("2002" = "blue", "2022" = "red")) +
+  coord_flip() +
+  labs(title = "PM2.5 by County in California",
+       x = "County", y = "PM2.5 (µg/m³)", fill = "Year") +
+  theme_minimal()
+```
+level3 site level:
+```{r}
+la_sites <- data_all %>%
+  filter(County == "Los Angeles")
+
+la_summary <- la_sites %>%
+  group_by(Site, Year) %>%
+  summarise(
+    mean_PM25 = mean(PM25, na.rm = TRUE),
+    median_PM25 = median(PM25, na.rm = TRUE),
+    sd_PM25 = sd(PM25, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+la_summary
+ggplot(la_sites, aes(x = reorder(Site, PM25, FUN = median), y = PM25, fill = factor(Year))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("2002" = "blue", "2022" = "red")) +
+  coord_flip() +
+  labs(title = "PM2.5 by Monitoring Site in Los Angeles County",
+       x = "Site", y = "PM2.5 (µg/m³)", fill = "Year") +
+  theme_minimal()
+
+```
+
+First plot: Statewide PM2.5 Distribution. X-axis: Year (2002 vs. 2022). Y-axis: PM2.5 concentration (µg/m³). Observations: Median PM2.5 has decreased from 2002 to 2022.
+The interquartile range (IQR) is narrower in 2022, suggesting less variability in PM2.5 across the state.Both years show some extreme outliers, but 2022 has more very high outliers (up to ~300 µg/m³), indicating occasional severe pollution events. 
+
+Second plot: The county-level boxplots show that PM2.5 is generally higher in urbanized counties, with Los Angeles and Riverside consistently above other counties. In most counties, 2022 PM2.5 values are slightly higher than 2002, and the variability is larger in more densely populated areas.
+The site-level boxplots in Los Angeles County reveal that some sites experience higher PM2.5 than others, reflecting local pollution sources. Temporal changes between 2002 and 2022 vary by site, with some showing increases, indicating that air quality trends are highly site-specific within the county.
