@@ -1,0 +1,191 @@
+---
+title: "lab6YG"
+format:
+ html:
+   embed-resources: true
+---
+
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidytext)
+library(readr)
+library(tidyr)
+```
+
+
+```{r}
+knitr::opts_chunk$set(eval = FALSE, include  = TRUE)
+```
+
+
+
+
+```{r}
+library(readr)
+library(dplyr)
+mt_samples <- read_csv("https://raw.githubusercontent.com/USCbiostats/data-science-data/master/00_mtsamples/mtsamples.csv")
+mt_samples <- mt_samples |>
+  select(description, medical_specialty, transcription)
+
+head(mt_samples)
+```
+
+
+#1: 
+
+
+```{r}
+mt_samples %>%
+  count(medical_specialty, sort = TRUE)
+```
+
+
+
+Ans: Not evenly distributed. 
+
+
+#2: 
+
+
+
+```{r}
+mt_samples %>%
+  unnest_tokens(word, transcription) %>%
+  count(word, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(x = reorder(word, n), y=n)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "Word", y = "Count", title="Top 20 Most Frequent Words")
+  
+```
+
+
+
+
+Ans: 
+Yes, this grapg makes sense bc the most frequent word is "the", with a count close to 150,000. Other very frequent words are "and", "was", "of", and "to", each appearing tens of thousands of times. These are mostly common stopwords (articles, prepositions, pronouns). Examples: the, and, was, of, to, a, in, is. Some content-related words show up too, such as "patient", which suggests the dataset may contain medical or clinical notes.
+Words at the bottom of the top-20 (e.g., then, right, at, this) still occur frequently but much less than the top words.
+
+
+#3: 
+
+
+
+
+```{r}
+
+mt_samples %>%
+  unnest_tokens(word, transcription) %>%
+  anti_join(stop_words %>% filter(!word %in% c("right", "left")), by = "word") %>%
+  filter(!grepl("^[0-9]+$", word)) %>%
+  count(word, sort = TRUE) %>%
+  top_n(20, n) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(x = "Word", y = "Count", title = "Top 20 Most Frequent Words")
+
+
+```
+
+
+
+
+
+Ans: 
+
+"patient" is far ahead of everything else. The presence of "right" and "left" being so high suggests a lot of laterality descriptions (right/left body parts, procedures).The vocabulary is clearly clinical — describing procedures, conditions, anatomy, and medical details. Compared to your earlier chart (dominated by stopwords like the, and, of), this one is much more domain-specific and useful for text analysis.
+
+
+
+
+
+#4: 
+
+
+
+
+```{r}
+mt_samples %>%
+  unnest_tokens(bigram, transcription, token = "ngrams", n=2) %>%
+  count(bigram, sort = TRUE) %>%
+  top_n(20, n)
+```
+
+```{r}
+mt_samples %>%
+  unnest_tokens(bigram, transcription, token = "ngrams", n=3) %>%
+  count(bigram, sort = TRUE) %>%
+  top_n(20, n)
+```
+
+
+Ans: First table (raw bigrams, no stopword removal): Top pairs are mostly stopword-heavy: the patient, of the, in the, to the. These reflect grammar rather than meaningful clinical context.Second table (after filtering stopwords more effectively): More domain-specific bigrams appear: the patient was (6104) the patient is (3075), the operating room (1532), prepped and draped (1490) at this time (1333). These are much more informative in a medical text setting.
+
+
+
+
+
+
+#5: 
+
+
+
+```{r}
+mt_samples %>%
+  unnest_tokens(bigram, transcription, token = "ngrams", n=2) %>%
+  separate(bigram, c("word1", "word2"), sep = " ") %>%
+   filter(word1 == "patient" | word2 == "patient") %>%
+  count(word1, word2, sort = TRUE)
+```
+
+
+
+#6: 
+
+
+```{r}
+mt_samples %>%
+  unnest_tokens(word, transcription) %>%
+  anti_join(stop_words, by = "word") %>%
+  filter(!grepl("^[0-9]+$", word)) %>%
+  group_by(medical_specialty) %>%
+  count(word, sort = TRUE) %>%
+  top_n(5,n) %>%
+  arrange(medical_specialty, desc(n))
+
+
+```
+
+
+
+#7: 
+
+
+```{r}
+mt_samples %>%
+  unnest_tokens(word, transcription) %>%
+  anti_join(stop_words %>% filter(!word %in% c("right", "left")), by = "word") %>%
+  filter(!grepl("^[0-9]+$", word)) %>%
+  count(word, sort = TRUE) %>%
+  top_n(5, n) %>%
+  ggplot(aes(x = reorder(word, n), y = n, fill = n)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_fill_gradient(low = "skyblue", high = "darkblue") +
+  labs(x = "Word", y = "Count", title = "Top 5 Most Frequent Words") +
+  theme_minimal()
+
+
+```
+
+
+
+
+
+
